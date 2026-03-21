@@ -3,7 +3,7 @@ from hyperon import MeTTa
 m = MeTTa()
 
 # Load and run your MeTTa file
-with open("conjuction.metta") as f:
+with open("test.metta") as f:
     code = f.read()
 
 result = m.run(code)
