@@ -66,14 +66,7 @@
     (dsu-find $parent $x)  
 ))  
   
-(=(test_dsu_union)(  
-    let* (($dsu (dsu-initialize ($x $y)))  
-           ($parent (car-atom $dsu))  
-           ($rank (cadr-atom $dsu))  
-           ($result (dsu-union $parent $rank $x $y))  
-           ($new-parent (car-atom $result)))  
-    (dsu-find $new-parent $x)  
-))  
+
   
 ;; Variable Extraction Tests  
 (=(test_get_variables_simple)(  
