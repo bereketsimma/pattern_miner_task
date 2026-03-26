@@ -1,0 +1,227 @@
+# DSU-Based Pattern Disjointness — Pseudocode
+
+## FUNCTION CHECK_INTER
+
+FUNCTION CHECK_INTER(x, acc)
+IF acc is empty THEN
+RETURN False
+END IF
+
+IF first(acc) == x THEN
+    RETURN True
+END IF
+
+RETURN CHECK_INTER(x, rest(acc))
+
+END FUNCTION
+
+
+## FUNCTION IS_VARIABLE
+
+FUNCTION IS_VARIABLE(var)
+RETURN (metatype(var) == Variable)
+END FUNCTION
+
+
+## FUNCTION GET_VARIABLES
+
+FUNCTION GET_VARIABLES(pattern, acc)
+
+IF pattern is empty THEN
+    RETURN acc
+END IF
+
+head ← first(pattern)
+tail ← rest(pattern)
+
+IF head is an expression THEN
+    acc ← GET_VARIABLES(head, acc)
+    RETURN GET_VARIABLES(tail, acc)
+
+ELSE IF IS_VARIABLE(head) AND NOT CHECK_INTER(head, acc) THEN
+    acc ← add head to acc
+    RETURN GET_VARIABLES(tail, acc)
+
+ELSE
+    RETURN GET_VARIABLES(tail, acc)
+END IF
+
+END FUNCTION
+
+
+## FUNCTION GET_PATTERNS_VARIABLES
+
+FUNCTION GET_PATTERNS_VARIABLES(patterns, acc)
+
+IF patterns is empty THEN
+    RETURN acc
+END IF
+
+head ← first(patterns)
+tail ← rest(patterns)
+
+acc ← GET_VARIABLES(head, acc)
+
+RETURN GET_PATTERNS_VARIABLES(tail, acc)
+END FUNCTION
+
+
+## FUNCTION DSU_INITIALIZE
+
+FUNCTION DSU_INITIALIZE(variables)
+
+parent ← empty map
+rank ← empty map
+
+FOR each v IN variables DO
+    parent[v] ← v
+    rank[v] ← 0
+END FOR
+
+RETURN (parent, rank)
+
+END FUNCTION
+
+# FUNCTION STORE_VAR_VALUE
+
+# Purpose:
+
+# Add a (key, value) pair to a list ONLY if the key does not already exist
+
+FUNCTION STORE_VAR_VALUE(list, key, value)
+
+result ← GET_VALUE(key, list)
+
+key_pair ← (key, value)
+
+IF result is empty THEN
+    # Key does not exist → add it
+    RETURN add key_pair to front of list
+ELSE
+    # Key already exists → do nothing
+    RETURN list
+END IF
+
+END FUNCTION
+
+
+## FUNCTION DSU_FIND
+
+FUNCTION DSU_FIND(parent, x)
+
+IF parent[x] == x THEN
+    RETURN x
+END IF
+
+root ← DSU_FIND(parent, parent[x])
+parent[x] ← root   // path compression
+
+RETURN root
+
+END FUNCTION
+
+
+## FUNCTION DSU_UNION
+
+FUNCTION DSU_UNION(parent, rank, x, y)
+
+rootX ← DSU_FIND(parent, x)
+rootY ← DSU_FIND(parent, y)
+
+IF rootX == rootY THEN
+    RETURN (parent, rank)
+END IF
+
+IF rank[rootX] > rank[rootY] THEN
+    parent[rootY] ← rootX
+
+ELSE IF rank[rootX] < rank[rootY] THEN
+    parent[rootX] ← rootY
+
+ELSE
+    parent[rootY] ← rootX
+    rank[rootX] ← rank[rootX] + 1
+END IF
+
+RETURN (parent, rank)
+
+END FUNCTION
+
+
+## FUNCTION UNION_VAR_PAIRS
+
+FUNCTION UNION_VAR_PAIRS(vars, parent, rank)
+
+FOR i FROM 0 TO length(vars) - 2 DO
+    (parent, rank) ← DSU_UNION(parent, rank, vars[i], vars[i+1])
+END FOR
+
+RETURN (parent, rank)
+
+END FUNCTION
+
+
+## FUNCTION UNION_PATTERNS
+
+FUNCTION UNION_PATTERNS(patterns, parent, rank)
+
+FOR each pattern IN patterns DO
+    vars ← GET_VARIABLES(pattern, empty list)
+    (parent, rank) ← UNION_VAR_PAIRS(vars, parent, rank)
+END FOR
+
+RETURN (parent, rank)
+
+END FUNCTION
+
+
+## FUNCTION ANY_CONNECTED
+
+FUNCTION ANY_CONNECTED(parent, vars1, vars2)
+
+FOR each v1 IN vars1 DO
+    root1 ← DSU_FIND(parent, v1)
+
+    FOR each v2 IN vars2 DO
+        root2 ← DSU_FIND(parent, v2)
+
+        IF root1 == root2 THEN
+            RETURN True
+        END IF
+    END FOR
+END FOR
+
+RETURN False
+
+END FUNCTION
+
+
+## MAIN FUNCTION DSU_ARE_DISJOINT
+
+FUNCTION DSU_ARE_DISJOINT(patterns)
+
+```
+IF patterns is empty OR has only one pattern THEN
+    RETURN True
+END IF
+
+allVars ← GET_PATTERNS_VARIABLES(patterns, empty list)
+
+(parent, rank) ← DSU_INITIALIZE(allVars)
+
+(parent, rank) ← UNION_PATTERNS(patterns, parent, rank)
+
+firstVars ← GET_VARIABLES(first(patterns), empty list)
+restVars ← GET_PATTERNS_VARIABLES(rest(patterns), empty list)
+
+IF ANY_CONNECTED(parent, firstVars, restVars) THEN
+    RETURN False
+ELSE
+    RETURN True
+END IF
+END FUNCTION
+## END OF FILE
+
+
+
+
