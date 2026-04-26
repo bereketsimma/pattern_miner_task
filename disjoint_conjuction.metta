@@ -106,19 +106,7 @@
                     (let* (($updated (get-variables $tail $acc)))
                       (cons-atom $head $updated))    
                     (get-variables $tail $acc))))))
-
-
   
-;  !(println "Test - Get Variables:") 
-; !(get-variables (Inheritance) ())  
-
-;  !(get-variables (Inheritance $x human)  )  
-; !(get-variables (Inheritance $x $y) ())  
-; !(get-variables (Inheritance $x (Inheritance $y human) $z) ()) 
-; !(get-variables ((Inheritance $x $y) (Inheritance $x $z) (Inheritance $a $b) (Inheritance $c $d) (Inheritance $e $f) (Inheritance $g $h)) ()) 
-
-
-
 
 
 (= (get-patterns-variables $patterns $acc)  
